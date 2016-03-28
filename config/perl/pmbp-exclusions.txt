@@ -1,0 +1,2 @@
+
+- "../../modules/promise" build tests
