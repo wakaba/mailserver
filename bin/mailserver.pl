@@ -80,7 +80,7 @@ $server->init_pop3
        my $result = [];
        for ($db_path->children (qr/\A[1-9][0-9]+\z/)) {
          $_ =~ /([0-9]+)\z/;
-         push @$result, {number => $1, size => -s $_->stat};
+         push @$result, sort { $a->{number} <=> $b->{number} } {number => $1, size => -s $_->stat};
        }
        return $result;
      },
