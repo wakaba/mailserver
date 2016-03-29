@@ -1,0 +1,35 @@
+machine:
+  services:
+    - docker
+dependencies:
+  override:
+    - git config --global user.email "temp@circleci.test"
+    - git config --global user.name "CircleCI"
+    - git submodule update --init
+    - rm -fr modules/*/bin modules/*/.git modules/*/t modules/*/t_deps
+    - docker info
+    - docker build -t quay.io/wakaba/mailserver .
+test:
+  override:
+    - mkdir -p temp/conf
+    - cp sketch/demo.conf temp/conf/test.conf
+    - docker run --name server -d -p 5100:1110 -v `pwd`/temp:/app/temp -e SERVER_CONFIG_FILE=/app/temp/conf/test.conf quay.io/wakaba/mailserver /server; sleep 10
+    - curl -f http://localhost:5100
+    - docker logs server
+
+deployment:
+  cvs:
+    branch: master
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS quay.io
+      - docker push quay.io/wakaba/mailserver
+
+  nightly:
+    branch: nightly
+    commands:
+      - curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"`git rev-parse HEAD`\",\"commit_message\":\"auto-merge nightly into master\"}" "https://api.github.com/repos/wakaba/mailserver/merges"
+
+  staging:
+    branch: staging
+    commands:
+      - curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"`git rev-parse HEAD`\",\"commit_message\":\"auto-merge staging into master\"}" "https://api.github.com/repos/wakaba/mailserver/merges"
