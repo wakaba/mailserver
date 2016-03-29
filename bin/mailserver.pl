@@ -132,11 +132,7 @@ $server->init_smtp
        if ($addr =~ /hoge/) { return 1 } else { return 0, 513, 'Bad recipient.' }
      },
      onmessage => sub {
-       my ($s,$mail) = @_;
-
-       #XXX
-       warn "Received mail from ($mail->{host}:$mail->{port}) $mail->{from} to $mail->{to}\n$mail->{data}\n";
-
+       my ($s, $mail) = @_;
        my $try; $try = sub {
          my $number = time * 100 + int rand 100;
          my $path = $db_path->child ($number);
@@ -145,7 +141,23 @@ $server->init_smtp
            if ($_[0]) {
              return $try->();
            } else {
-             return $file->write_byte_string ($mail->{data})->then (sub {
+             my $c = sub {
+               my $s = $_[0];
+               $s =~ s/[\x0D\x0A]/ /g;
+               return $s;
+             };
+             my $trace = $c->("Return-Path: <$mail->{from}>")."\x0D\x0A";
+             my @time = gmtime;
+             my $time = sprintf '%02d %s %04d %02d:%02d:%02d GMT',
+                 $time[3],
+                 qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)[$time[4]],
+                 $time[5]+1900, $time[2], $time[1], $time[0];
+             my $to = "<$mail->{to}->[0]>";
+             if (@{$mail->{to}} > 1) {
+               $to .= ' (' . (join ' ', map { "<$_>" } @{$mail->{to}}[1..$#{$mail->{to}}]) . ')';
+             }
+             $trace .= $c->("Received: from $mail->{helo} ($mail->{host}) by $Config->{host} with SMTP id $number for $to; $time")."\x0D\x0A";
+             return $file->write_byte_string ($trace.$mail->{data})->then (sub {
                L action => 'message_saved',
                  message_number => $number,
                  session_id => $s->{server_message_id};

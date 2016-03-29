@@ -235,12 +235,12 @@ sub _command ($$$) {
         }
         $self->ok ('...');
         pos ($_[0]) = 0;
-        while ($_[0] =~ /\G(.*?\x0D\x0A)/gs) {
-          $self->{handle}->push_write ('.');
+        while ($_[0] =~ /\G(.*?\x0D\x0A)/gcs) {
+          $self->{handle}->push_write ('.') if substr ($1, 0, 1) eq '.';
           $self->{handle}->push_write ($1);
         }
-        if ($_[0] =~ /\G(.+)\z/gs) {
-          $self->{handle}->push_write ('.');
+        if ($_[0] =~ /\G(.+)\z/gcs) {
+          $self->{handle}->push_write ('.') if substr ($1, 0, 1) eq '.';
           $self->{handle}->push_write ($1);
           $self->{handle}->push_write ("\x0D\x0A");
         }
