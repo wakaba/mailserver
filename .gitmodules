@@ -4,3 +4,12 @@
 [submodule "modules/AnyEvent-SMTP"]
 	path = modules/AnyEvent-SMTP
 	url = https://github.com/Mons/AnyEvent-SMTP
+[submodule "modules/json-ps"]
+	path = modules/json-ps
+	url = https://github.com/wakaba/perl-json-ps
+[submodule "modules/Path-Tiny"]
+	path = modules/Path-Tiny
+	url = https://github.com/dagolden/Path-Tiny
+[submodule "modules/promised-file"]
+	path = modules/promised-file
+	url = https://github.com/wakaba/perl-promised-file

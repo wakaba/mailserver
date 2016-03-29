@@ -1,2 +1,4 @@
 
 - "../../modules/promise" build tests
+- "../../modules/json-ps" build tests
+- "../../modules/promised-file" build tests

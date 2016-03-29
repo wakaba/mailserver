@@ -1,7 +1,10 @@
 AnyEvent~7.12
 Object::Event~1.23
-Mail::Address~2.14
-common::sense~3.74
 Date::Format~2.24
 Canary::Stability~2011
 Carp~1.38
+Encode~2.83
+File::Path~2.12
+Mail::Address~2.14
+common::sense~3.74
+Cwd~3.62
