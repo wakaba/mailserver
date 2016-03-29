@@ -52,6 +52,7 @@ $server->init_pop3
      },
      ondisconnect => sub {
        L action => 'session_end',
+           protocol => 'pop3',
            session_id => $_[0]->{server_session_id};
      },
      onauth => sub {
