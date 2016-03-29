@@ -221,6 +221,42 @@ sub _command ($$$) {
         $self->error ("Bad arguments");
         return $self->{processing} = 0;
       }
+    } elsif ($command eq 'UIDL') {
+      if ($args =~ /\A[0-9]+\z/) {
+        $args = 0+$args;
+        if ($self->{deleted}->{$args}) {
+          $self->error ("Message not found");
+          return $self->{processing} = 0;
+        } else {
+          return Promise->resolve->then (sub {
+            return $self->onlist_of->($self, $args);
+          })->then (sub {
+            my $result = $_[0];
+            if (defined $result) {
+              $self->ok (sprintf '%d %d', $args, $args);
+            } else {
+              $self->error ("Message not found");
+            }
+            return $self->{processing} = 0;
+          });
+        }
+      } elsif ($args eq '') {
+        return Promise->resolve->then (sub {
+          return $self->onlist->($self);
+        })->then (sub {
+          my $result = $_[0];
+          $self->ok ('...');
+          for (@$result) {
+            next if $self->{deleted}->{0+$_->{number}};
+            $self->{handle}->push_write (sprintf "%d %d\x0D\x0A", $_->{number}, $_->{number});
+          }
+          $self->{handle}->push_write (".\x0D\x0A");
+          return $self->{processing} = 0;
+        });
+      } else {
+        $self->error ("Bad arguments");
+        return $self->{processing} = 0;
+      }
     } elsif ($command eq 'RETR') {
       unless ($args =~ /\A[0-9]+\z/) {
         $self->error ("Bad arguments");
