@@ -36,7 +36,7 @@ sub init_pop3 ($%) {
       $server->onlist_of ($args{onlist_of});
       $server->ondelete ($args{ondelete});
       $server->ondisconnect ($args{ondisconnect});
-      $server->set_fh ($fh);
+      $server->set_fh ($fh, $args{tls});
     });
   };
 } # init_pop3

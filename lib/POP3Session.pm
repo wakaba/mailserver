@@ -62,10 +62,14 @@ sub ondisconnect ($;$) {
   return $_[0]->{ondisconnect} || sub { };
 } # ondisconnect
 
-sub set_fh ($$) {
+sub set_fh ($$;$) {
   my $self = $_[0];
   $self->{handle} = AnyEvent::Handle->new
       (fh => $_[1],
+       ($_[2] ? (
+         tls => 'accept',
+         tls_ctx => $_[2],
+       ) : ()),
        on_read => sub {
          if ($_[0]->{rbuf} =~ /\A(.*?)\x0D\x0A/s) {
            push @{$self->{lines}}, $1;

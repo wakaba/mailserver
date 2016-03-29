@@ -10,8 +10,21 @@ my $conf_file_name = shift or die "Usage: $0 conf-file\n";
 my $conf_path = path ($conf_file_name);
 my $Config = json_bytes2perl $conf_path->slurp;
 
-my $db_path = path ($Config->{db_dir})->absolute ($conf_path->parent);
+my $base_path = $conf_path->parent->absolute;
+my $db_path = path ($Config->{db_dir})->absolute ($base_path);
 $db_path->mkpath;
+
+if (defined $Config->{tls}) {
+  $Config->{tls}->{key} = path (delete $Config->{tls}->{key_file})->absolute ($base_path)->slurp
+      if defined $Config->{tls}->{key_file};
+  $Config->{tls}->{cert} = path (delete $Config->{tls}->{cert_file})->absolute ($base_path)->slurp
+      if defined $Config->{tls}->{cert_file};
+  $Config->{tls}->{ca_cert} = path (delete $Config->{tls}->{ca_file})->absolute ($base_path)->slurp
+      if defined $Config->{tls}->{ca_file};
+}
+
+use Data::Dumper;
+warn Dumper $Config;
 
 sub L (%) {
   my @time = gmtime;
@@ -29,6 +42,7 @@ my $server = MailServer->new;
 $server->init_pop3
     (host => $Config->{host},
      port => $Config->{pop3_port},
+     tls => $Config->{tls},
      onconnect => sub {
        my $remote = $_[1];
        my $id = time * 100 + int rand 100;
@@ -128,8 +142,16 @@ $server->init_smtp
            session_id => $s->{server_session_id};
      },
      onrcpt => sub {
-       my ($m,$addr) = @_;
-       if ($addr =~ /hoge/) { return 1 } else { return 0, 513, 'Bad recipient.' }
+       my ($m, $addr) = @_;
+       my $allowed = 0;
+       for (@{$Config->{allowed_domains}}) {
+         if ($addr =~ /\@\Q$_\E\z/) {
+           $allowed = 1;
+           last;
+         }
+       }
+       return 0, 513, 'Bad recipient' unless $allowed;
+       return 1;
      },
      onmessage => sub {
        my ($s, $mail) = @_;
@@ -143,7 +165,7 @@ $server->init_smtp
            } else {
              my $c = sub {
                my $s = $_[0];
-               $s =~ s/[\x0D\x0A]/ /g;
+               $s =~ s/[\x0D\x0A\x09]/ /g;
                return $s;
              };
              my $trace = $c->("Return-Path: <$mail->{from}>")."\x0D\x0A";
@@ -160,7 +182,9 @@ $server->init_smtp
              return $file->write_byte_string ($trace.$mail->{data})->then (sub {
                L action => 'message_saved',
                  message_number => $number,
-                 session_id => $s->{server_message_id};
+                 session_id => $s->{server_session_id},
+                 mail_from => $mail->{from},
+                 mail_to => join ',', @{$mail->{to}};
              });
            }
          });
