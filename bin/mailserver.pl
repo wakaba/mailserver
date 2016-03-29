@@ -60,8 +60,10 @@ $server->init_pop3
            defined $Config->{password} and
            $self->{user} eq $Config->{user} and
            $self->{pass} eq $Config->{password}) {
+         L action => 'session_auth', result => 'ok', user => $self->{user};
          return 1;
        } else {
+         L action => 'session_auth', result => 'ng', user => $self->{user};
          return 0;
        }
      },
