@@ -25,16 +25,17 @@ sub init_pop3 ($%) {
   my ($self, %args) = @_;
   tcp_server $args{host}, $args{port}, sub {
     my ($fh, $remote_host, $remote_port) = @_;
+    $self->{pop3} = my $server = POP3Session->new;
     return Promise->resolve->then (sub {
-      return $args{onconnect}->($self, {host => $remote_host, port => $remote_port}) if defined $args{onconnect};
+      return $args{onconnect}->($server, {host => $remote_host, port => $remote_port}) if defined $args{onconnect};
     })->then (sub {
-      $self->{pop3} = my $server = POP3Session->new;
       $server->onauth ($args{onauth});
       $server->onretr ($args{onretr});
       $server->onstat ($args{onstat});
       $server->onlist ($args{onlist});
       $server->onlist_of ($args{onlist_of});
       $server->ondelete ($args{ondelete});
+      $server->ondisconnect ($args{ondisconnect});
       $server->set_fh ($fh);
     });
   };

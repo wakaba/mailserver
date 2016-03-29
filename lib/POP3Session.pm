@@ -55,6 +55,13 @@ sub ondelete ($;$) {
   return $_[0]->{ondelete} || sub { 1 };
 } # ondelete
 
+sub ondisconnect ($;$) {
+  if (@_ > 1) {
+    $_[0]->{ondisconnect} = $_[1];
+  }
+  return $_[0]->{ondisconnect} || sub { };
+} # ondisconnect
+
 sub set_fh ($$) {
   my $self = $_[0];
   $self->{handle} = AnyEvent::Handle->new
@@ -76,11 +83,13 @@ sub set_fh ($$) {
          D "error $_[2]";
          $self->{handle}->destroy;
          delete $self->{handle};
+         $self->ondisconnect->($self);
        },
        on_eof => sub {
          D "eof";
          $self->{handle}->destroy;
          delete $self->{handle};
+         $self->ondisconnect->($self);
        });
   $self->ok ('Hello, what is your USER name?');
 } # set_fh
