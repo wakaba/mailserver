@@ -233,7 +233,7 @@ sub _command ($$$) {
           })->then (sub {
             my $result = $_[0];
             if (defined $result) {
-              $self->ok (sprintf '%d %d', $args, $args);
+              $self->ok (sprintf '%d %s', $args, $result->{id});
             } else {
               $self->error ("Message not found");
             }
@@ -248,7 +248,7 @@ sub _command ($$$) {
           $self->ok ('...');
           for (@$result) {
             next if $self->{deleted}->{0+$_->{number}};
-            $self->{handle}->push_write (sprintf "%d %d\x0D\x0A", $_->{number}, $_->{number});
+            $self->{handle}->push_write (sprintf "%d %s\x0D\x0A", $_->{number}, $_->{id});
           }
           $self->{handle}->push_write (".\x0D\x0A");
           return $self->{processing} = 0;

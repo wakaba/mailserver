@@ -34,6 +34,19 @@ sub L (%) {
   print "\n";
 } # L
 
+sub messages () {
+  my $result = [];
+  my $by_number = {};
+  my $n = 1;
+  for ($db_path->children (qr/\A[1-9][0-9]+\z/)) {
+    $_ =~ /([0-9]+)\z/;
+    my $num = $n++;
+    push @$result,
+        $by_number->{$num} = {number => $num, id => $1, size => -s $_->stat};
+  }
+  return {all => $result, map => $by_number};
+} # messages
+
 my $server = MailServer->new;
 
 $server->init_pop3
@@ -69,38 +82,27 @@ $server->init_pop3
        }
      },
      onstat => sub {
+       $_[0]->{server_messages} ||= messages;
        my $result = {count => 0, size => 0};
-       for ($db_path->children (qr/\A[1-9][0-9]+\z/)) {
+       for (@{$_[0]->{server_messages}->{all}}) {
          $result->{count}++;
-         $result->{size} += -s $_->stat;
+         $result->{size} += $_->{size};
        }
        return $result;
      },
      onlist => sub {
-       my $result = [];
-       for ($db_path->children (qr/\A[1-9][0-9]+\z/)) {
-         $_ =~ /([0-9]+)\z/;
-         push @$result, sort { $a->{number} <=> $b->{number} } {number => $1, size => -s $_->stat};
-       }
-       return $result;
+       $_[0]->{server_messages} ||= messages;
+       return $_[0]->{server_messages}->{all};
      },
      onlist_of => sub {
-       my $number = $_[1];
-       return undef unless $number =~ /\A[1-9][0-9]+\z/;
-       my $path = $db_path->child ($number);
-       my $file = Promised::File->new_from_path ($path);
-       return $file->is_file->then (sub {
-         return undef unless $_[0];
-         return $file->stat->then (sub {
-           return undef unless defined $_[0];
-           return {size => -s $_[0]};
-         });
-       });
+       $_[0]->{server_messages} ||= messages;
+       return $_[0]->{server_messages}->{map}->{$_[1]}; # or undef
      },
      onretr => sub {
-       my $number = $_[1];
-       return undef unless $number =~ /\A[1-9][0-9]+\z/;
-       my $path = $db_path->child ($number);
+       $_[0]->{server_messages} ||= messages;
+       my $m = $_[0]->{server_messages}->{map}->{$_[1]}; # or undef
+       return undef unless defined $m;
+       my $path = $db_path->child ($m->{id});
        my $file = Promised::File->new_from_path ($path);
        return $file->is_file->then (sub {
          return undef unless $_[0];
@@ -108,17 +110,19 @@ $server->init_pop3
        });
      },
      ondelete => sub {
+       return unless defined $_[0]->{server_messages};
        my $server = $_[0];
        my $p = [];
        for my $number (keys %{$server->{deleted}}) {
-         next unless $number =~ /\A[1-9][0-9]+\z/;
-         my $path = $db_path->child ($number);
+         my $m = $_[0]->{server_messages}->{map}->{$number};
+         next unless defined $m;
+         my $path = $db_path->child ($m->{id});
          my $file = Promised::File->new_from_path ($path);
          push @$p, $file->is_file->then (sub {
            return $file->remove_tree;
          })->then (sub {
            L action => 'message_deleted',
-             message_number => $number,
+             message_id => $m->{id},
              session_id => $server->{server_session_id};
          });
        }
@@ -184,7 +188,7 @@ $server->init_smtp
              $trace .= $c->("Received: from $mail->{helo} ($mail->{host}) by $Config->{host} with SMTP id $number for $to; $time")."\x0D\x0A";
              return $file->write_byte_string ($trace.$mail->{data})->then (sub {
                L action => 'message_saved',
-                 message_number => $number,
+                 message_id => $number,
                  session_id => $s->{server_session_id},
                  mail_from => $mail->{from},
                  mail_to => join ',', @{$mail->{to}};
