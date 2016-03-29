@@ -113,6 +113,7 @@ sub fatal_error ($$) {
 
 sub error ($$) {
   my $self = $_[0];
+  D "Error: $_[1]";
   $self->{handle}->push_write ("-ERR $_[1]\x0D\x0A");
 } # error
 
@@ -291,7 +292,7 @@ sub _command ($$$) {
     }
   }
 
-  $self->error ("Unknown command");
+  $self->error ("Unknown command |$command|");
   return $self->{processing} = 0;
 } # _command
 
