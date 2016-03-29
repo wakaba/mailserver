@@ -1,3 +1,6 @@
 [submodule "modules/promise"]
 	path = modules/promise
 	url = git://github.com/wakaba/perl-promise
+[submodule "modules/AnyEvent-SMTP"]
+	path = modules/AnyEvent-SMTP
+	url = https://github.com/Mons/AnyEvent-SMTP

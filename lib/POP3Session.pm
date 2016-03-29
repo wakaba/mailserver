@@ -1,4 +1,4 @@
-package POP3Server;
+package POP3Session;
 use strict;
 use warnings;
 use AnyEvent::Handle;

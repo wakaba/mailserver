@@ -18,6 +18,12 @@ deps: git-submodules pmbp-install
 
 git-submodules:
 	$(GIT) submodule update --init
+	mkdir -p modules/AnyEvent-SMTP/config/perl
+	echo "Object::Event" > modules/AnyEvent-SMTP/config/perl/modules.txt
+	echo "AnyEvent" >> modules/AnyEvent-SMTP/config/perl/modules.txt
+	echo "common::sense" >> modules/AnyEvent-SMTP/config/perl/modules.txt
+	echo "Sys::Hostname" >> modules/AnyEvent-SMTP/config/perl/modules.txt
+	echo "Mail::Address" >> modules/AnyEvent-SMTP/config/perl/modules.txt
 
 PMBP_OPTIONS=
 
