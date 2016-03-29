@@ -23,9 +23,6 @@ if (defined $Config->{tls}) {
       if defined $Config->{tls}->{ca_file};
 }
 
-use Data::Dumper;
-warn Dumper $Config;
-
 sub L (%) {
   my @time = gmtime;
   my $t = sprintf '%04d-%02d-%02dT%02d:%02d:%02dZ',
