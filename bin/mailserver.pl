@@ -56,7 +56,10 @@ $server->init_pop3
      },
      onauth => sub {
        my $self = $_[0];
-       if ($self->{user} eq 'user' and $self->{pass} eq 'pass') {
+       if (defined $Config->{user} and
+           defined $Config->{password} and
+           $self->{user} eq $Config->{user} and
+           $self->{pass} eq $Config->{password}) {
          return 1;
        } else {
          return 0;
