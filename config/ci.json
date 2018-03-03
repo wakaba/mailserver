@@ -1,0 +1,17 @@
+{
+  "circleci": {
+    "docker-build": "quay.io/wakaba/mailserver",
+    "build": [
+      "git submodule update --init",
+      "rm -fr modules/*/bin modules/*/.git modules/*/t modules/*/t_deps"
+    ],
+    "tests": [
+      "mkdir -p temp/conf",
+      "cp sketch/demo.conf temp/conf/test.conf",
+      "docker run --name server -d -p 5100:1110 -v `pwd`/temp:/app/temp -e SERVER_CONFIG_FILE=/app/temp/conf/test.conf quay.io/wakaba/mailserver /server; sleep 10",
+      "curl -f http://localhost:5100",
+      "docker logs server"
+    ],
+    "merger": true
+  }
+}
