@@ -1,5 +1,4 @@
 AnyEvent~7.14
-AnyEvent::IO
 Canary::Stability~2012
 Carp~1.50
 Cwd~3.75
