@@ -2,8 +2,7 @@ AnyEvent~7.14
 Canary::Stability~2012
 Carp~1.50
 Cwd~3.75
-Date::Format~2.24
-Encode~3.00
+Date::Parse~2.30
 File::Path~2.16
 Mail::Address~2.20
 Net::SSLeay~1.85
