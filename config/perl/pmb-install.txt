@@ -4,7 +4,7 @@ Carp~1.50
 Cwd~3.75
 Date::Format~2.24
 File::Path~2.16
-Mail::Address~2.20
+Mail::Address~2.21
 Net::SSLeay~1.88
 Object::Event~1.23
 common::sense~3.74
