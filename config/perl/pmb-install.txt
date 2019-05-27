@@ -3,7 +3,7 @@ AnyEvent::IO
 Canary::Stability~2013
 Carp~1.50
 Cwd~3.75
-Date::Parse~2.30
+Date::Format~2.24
 File::Path~2.16
 Mail::Address~2.21
 Net::SSLeay~1.88
