@@ -9,7 +9,7 @@
       "mkdir -p temp/conf",
       "cp sketch/demo.conf temp/conf/test.conf",
       "docker run --name server -d -p 5100:1110 -v `pwd`/temp:/app/temp -e SERVER_CONFIG_FILE=/app/temp/conf/test.conf quay.io/wakaba/mailserver /server; sleep 10",
-      "curl -f http://localhost:5100",
+      "curl -f --http0.9 http://localhost:5100",
       "docker logs server"
     ],
     "merger": true
