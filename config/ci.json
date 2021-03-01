@@ -12,6 +12,7 @@
       "curl -f --http0.9 http://localhost:5100",
       "docker logs server"
     ],
-    "merger": true
+    "merger": true,
+    "gaa": true
   }
 }
