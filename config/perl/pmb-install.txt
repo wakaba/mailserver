@@ -1,10 +1,9 @@
 AnyEvent~7.17
 AnyEvent::FileLock~0.06
-AnyEvent::Util
 Canary::Stability~2013
 Carp~1.50
 Cwd~3.75
-Date::Parse~2.33
+Date::Format~2.24
 File::Path~2.18
 Mail::Address~2.21
 Method::WeakCallback~0.04
