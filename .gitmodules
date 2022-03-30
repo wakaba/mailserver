@@ -1,6 +1,6 @@
 [submodule "modules/promise"]
 	path = modules/promise
-	url = git://github.com/wakaba/perl-promise
+	url = https://github.com/wakaba/perl-promise
 	track = master
 [submodule "modules/AnyEvent-SMTP"]
 	path = modules/AnyEvent-SMTP
